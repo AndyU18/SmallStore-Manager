@@ -1,13 +1,133 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  SELLER
+}
+
+enum MovementType {
+  IN
+  OUT
+  ADJUSTMENT
+  RETURN
+}
+
+enum SaleStatus {
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id             String          @id @default(uuid())
+  email          String          @unique
+  password       String
+  name           String
+  role           Role            @default(SELLER)
+  stockMovements StockMovement[]
+  sales          Sale[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@map("users")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("categories")
+}
+
+model Product {
+  id             String          @id @default(uuid())
+  name           String
+  sku            String          @unique
+  description    String?
+  purchasePrice  Float
+  salePrice      Float
+  stock          Int             @default(0)
+  minStock       Int             @default(5)
+  status         Boolean         @default(true)
+  categoryId     String
+  category       Category        @relation(fields: [categoryId], references: [id])
+  saleItems      SaleItem[]
+  stockMovements StockMovement[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@map("products")
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  email     String?
+  phone     String?
+  sales     Sale[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("customers")
+}
+
+model Sale {
+  id         String     @id @default(uuid())
+  subtotal   Float
+  total      Float
+  profit     Float
+  status     SaleStatus @default(COMPLETED)
+  customerId String?
+  customer   Customer?  @relation(fields: [customerId], references: [id])
+  userId     String
+  user       User       @relation(fields: [userId], references: [id])
+  items      SaleItem[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@map("sales")
+}
+
+model SaleItem {
+  id            String   @id @default(uuid())
+  saleId        String
+  sale          Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id])
+  quantity      Int
+  price         Float // price at the time of sale
+  purchasePrice Float // purchase price at the time of sale (for historical profit calculation)
+  profit        Float // profit for this line item: (price - purchasePrice) * quantity
+  createdAt     DateTime @default(now())
+
+  @@map("sale_items")
+}
+
+model StockMovement {
+  id            String       @id @default(uuid())
+  productId     String
+  product       Product      @relation(fields: [productId], references: [id])
+  type          MovementType
+  quantity      Int
+  previousStock Int
+  newStock      Int
+  reason        String
+  userId        String
+  user          User         @relation(fields: [userId], references: [id])
+  createdAt     DateTime     @default(now())
+
+  @@map("stock_movements")
 }
