@@ -1,7 +1,15 @@
 import { PrismaClient, Role } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import * as bcrypt from 'bcrypt';
+import * as dotenv from 'dotenv';
 
-const prisma = new PrismaClient();
+dotenv.config();
+
+const connectionString = process.env.DATABASE_URL;
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('Seeding database...');
@@ -44,7 +52,7 @@ async function main() {
     { name: 'Otros', description: 'Productos generales sin categoría específica' },
   ];
 
-  const categories = [];
+  const categories: any[] = [];
   for (const cat of categoriesData) {
     const createdCat = await prisma.category.upsert({
       where: { name: cat.name },
