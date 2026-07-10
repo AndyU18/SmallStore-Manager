@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { ProtectedShell } from '@/components/layout/ProtectedShell';
+import { TableSkeleton } from '@/components/ui/TableSkeleton';
+import { useAuth } from '@/hooks/useAuth';
 import { productsService } from '@/services/products.service';
 import { salesService } from '@/services/sales.service';
 import { Product } from '@/types/product';
@@ -13,6 +15,7 @@ type CartItem = {
 };
 
 export default function SalesPage() {
+  const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -221,7 +224,7 @@ export default function SalesPage() {
             </thead>
             <tbody className="divide-y divide-white/10">
               {loading ? (
-                <tr><td colSpan={7} className="px-4 py-6 text-center text-slate-400">Cargando...</td></tr>
+                <TableSkeleton columns={7} />
               ) : sales.map((sale) => (
                 <tr key={sale.id} className={sale.status === 'CANCELLED' ? 'bg-red-500/5 text-slate-400' : 'hover:bg-white/[0.03]'}>
                   <td className="px-4 py-3">{new Date(sale.createdAt).toLocaleString()}</td>
@@ -231,7 +234,7 @@ export default function SalesPage() {
                   <td className="px-4 py-3 text-emerald-300">{sale.profit.toFixed(2)} Bs</td>
                   <td className="px-4 py-3">{sale.user?.name || '-'}</td>
                   <td className="px-4 py-3 text-right">
-                    {sale.status !== 'CANCELLED' ? (
+                    {sale.status !== 'CANCELLED' && user?.role === 'ADMIN' ? (
                       <button onClick={() => handleCancel(sale.id)} className="rounded-md bg-red-500/15 px-3 py-1 text-red-200 hover:bg-red-500/25">Anular</button>
                     ) : null}
                   </td>

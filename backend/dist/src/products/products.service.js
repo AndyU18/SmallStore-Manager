@@ -97,7 +97,7 @@ let ProductsService = class ProductsService {
                             previousStock: current.stock,
                             newStock: dto.stock,
                             reason: 'Ajuste automatico por edicion de producto',
-                            userId: userId || 'system',
+                            userId,
                         },
                     });
                 }

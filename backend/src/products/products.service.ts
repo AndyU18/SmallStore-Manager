@@ -68,7 +68,7 @@ export class ProductsService {
     }
   }
 
-  async update(id: string, dto: UpdateProductDto, userId?: string) {
+  async update(id: string, dto: UpdateProductDto, userId: string) {
     const current = await this.ensureProduct(id);
     if (dto.categoryId) {
       await this.ensureCategory(dto.categoryId);
@@ -95,7 +95,7 @@ export class ProductsService {
               previousStock: current.stock,
               newStock: dto.stock,
               reason: 'Ajuste automatico por edicion de producto',
-              userId: userId || 'system',
+              userId,
             },
           });
         }

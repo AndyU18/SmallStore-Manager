@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Save, Trash2 } from 'lucide-react';
 import { ProtectedShell } from '@/components/layout/ProtectedShell';
+import { TableSkeleton } from '@/components/ui/TableSkeleton';
 import { categoriesService } from '@/services/categories.service';
 import { Category } from '@/types/product';
 
@@ -115,7 +116,7 @@ export default function CategoriesPage() {
             </thead>
             <tbody className="divide-y divide-white/10">
               {loading ? (
-                <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400">Cargando...</td></tr>
+                <TableSkeleton columns={4} />
               ) : categories.map((category) => (
                 <tr key={category.id} className="hover:bg-white/[0.03]">
                   <td className="px-4 py-3 font-medium">{category.name}</td>

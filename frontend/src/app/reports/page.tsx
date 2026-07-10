@@ -12,6 +12,7 @@ import {
   YAxis,
 } from 'recharts';
 import { ProtectedShell } from '@/components/layout/ProtectedShell';
+import { TableSkeleton } from '@/components/ui/TableSkeleton';
 import { ReportsResponse, reportsService } from '@/services/reports.service';
 
 const formatMoney = (value: number) => `${value.toFixed(2)} Bs`;
@@ -131,7 +132,16 @@ export default function ReportsPage() {
           </button>
         </form>
 
-        {loading ? <div className="rounded-xl border border-white/10 bg-slate-900 p-6 text-slate-400">Generando reporte...</div> : null}
+        {loading ? (
+          <div className="grid gap-4 md:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="animate-pulse rounded-xl border border-white/10 bg-slate-900 p-4">
+                <div className="h-4 w-24 rounded bg-slate-800/80" />
+                <div className="mt-3 h-7 w-32 rounded bg-slate-800/80" />
+              </div>
+            ))}
+          </div>
+        ) : null}
 
         {report ? (
           <>
@@ -186,7 +196,7 @@ export default function ReportsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/10">
-                    {report.sales.map((sale) => (
+                    {loading ? <TableSkeleton columns={5} /> : report.sales.map((sale) => (
                       <tr key={sale.id} className="hover:bg-white/[0.03]">
                         <td className="px-4 py-3">{new Date(sale.createdAt).toLocaleString()}</td>
                         <td className="px-4 py-3">{sale.items.map((item) => `${item.product?.name} x${item.quantity}`).join(', ')}</td>
@@ -195,7 +205,7 @@ export default function ReportsPage() {
                         <td className="px-4 py-3">{sale.user?.name || '-'}</td>
                       </tr>
                     ))}
-                    {!report.sales.length ? <tr><td colSpan={5} className="px-4 py-6 text-center text-slate-400">Sin ventas en el rango.</td></tr> : null}
+                    {!loading && !report.sales.length ? <tr><td colSpan={5} className="px-4 py-6 text-center text-slate-400">Sin ventas en el rango.</td></tr> : null}
                   </tbody>
                 </table>
               </section>

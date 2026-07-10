@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ProtectedShell } from '@/components/layout/ProtectedShell';
+import { TableSkeleton } from '@/components/ui/TableSkeleton';
 import { productsService } from '@/services/products.service';
 import { stockService } from '@/services/stock.service';
 import { Product } from '@/types/product';
@@ -118,7 +119,7 @@ export default function StockPage() {
             </thead>
             <tbody className="divide-y divide-white/10">
               {loading ? (
-                <tr><td colSpan={8} className="px-4 py-6 text-center text-slate-400">Cargando...</td></tr>
+                <TableSkeleton columns={8} />
               ) : movements.map((movement) => (
                 <tr key={movement.id} className="hover:bg-white/[0.03]">
                   <td className="px-4 py-3">{new Date(movement.createdAt).toLocaleString()}</td>

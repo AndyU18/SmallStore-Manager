@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Plus, Save } from 'lucide-react';
 import { ProtectedShell } from '@/components/layout/ProtectedShell';
+import { TableSkeleton } from '@/components/ui/TableSkeleton';
 import { categoriesService } from '@/services/categories.service';
 import { productsService } from '@/services/products.service';
 import { Category, Product } from '@/types/product';
@@ -169,7 +170,7 @@ export default function ProductsPage() {
             </thead>
             <tbody className="divide-y divide-white/10">
               {loading ? (
-                <tr><td colSpan={9} className="px-4 py-6 text-center text-slate-400">Cargando...</td></tr>
+                <TableSkeleton columns={9} />
               ) : filteredProducts.map((product) => {
                 const isLow = product.stock <= product.minStock;
                 return (
