@@ -8,27 +8,51 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StockMovementsController = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
+const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
+const roles_decorator_1 = require("../common/decorators/roles.decorator");
+const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
+const roles_guard_1 = require("../common/guards/roles.guard");
 const stock_movements_service_1 = require("./stock-movements.service");
+const adjust_stock_dto_1 = require("./dto/adjust-stock.dto");
 let StockMovementsController = class StockMovementsController {
     stockMovementsService;
     constructor(stockMovementsService) {
         this.stockMovementsService = stockMovementsService;
     }
-    async findAll() {
-        return this.stockMovementsService.findAll();
+    async findAll(productId, type) {
+        return this.stockMovementsService.findAll({ productId, type });
+    }
+    async adjust(dto, user) {
+        return this.stockMovementsService.adjust(dto, user.id);
     }
 };
 exports.StockMovementsController = StockMovementsController;
 __decorate([
     (0, common_1.Get)(),
+    __param(0, (0, common_1.Query)('productId')),
+    __param(1, (0, common_1.Query)('type')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], StockMovementsController.prototype, "findAll", null);
+__decorate([
+    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN),
+    (0, common_1.Post)('adjust'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [adjust_stock_dto_1.AdjustStockDto, Object]),
+    __metadata("design:returntype", Promise)
+], StockMovementsController.prototype, "adjust", null);
 exports.StockMovementsController = StockMovementsController = __decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, common_1.Controller)('stock-movements'),
     __metadata("design:paramtypes", [stock_movements_service_1.StockMovementsService])
 ], StockMovementsController);

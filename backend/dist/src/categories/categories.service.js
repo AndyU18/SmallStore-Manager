@@ -5,16 +5,70 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CategoriesService = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
+const prisma_service_1 = require("../prisma/prisma.service");
 let CategoriesService = class CategoriesService {
+    prisma;
+    constructor(prisma) {
+        this.prisma = prisma;
+    }
     async findAll() {
-        return [];
+        return this.prisma.category.findMany({
+            orderBy: { name: 'asc' },
+            include: { _count: { select: { products: true } } },
+        });
+    }
+    async create(dto) {
+        try {
+            return await this.prisma.category.create({ data: dto });
+        }
+        catch (error) {
+            this.handleUniqueName(error);
+        }
+    }
+    async update(id, dto) {
+        await this.ensureExists(id);
+        try {
+            return await this.prisma.category.update({
+                where: { id },
+                data: dto,
+            });
+        }
+        catch (error) {
+            this.handleUniqueName(error);
+        }
+    }
+    async remove(id) {
+        await this.ensureExists(id);
+        const productCount = await this.prisma.product.count({ where: { categoryId: id } });
+        if (productCount > 0) {
+            throw new common_1.ConflictException('No se puede eliminar una categoria con productos asignados');
+        }
+        return this.prisma.category.delete({ where: { id } });
+    }
+    async ensureExists(id) {
+        const category = await this.prisma.category.findUnique({ where: { id } });
+        if (!category) {
+            throw new common_1.NotFoundException('Categoria no encontrada');
+        }
+        return category;
+    }
+    handleUniqueName(error) {
+        if (error instanceof client_1.Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+            throw new common_1.ConflictException('Ya existe una categoria con ese nombre');
+        }
+        throw error;
     }
 };
 exports.CategoriesService = CategoriesService;
 exports.CategoriesService = CategoriesService = __decorate([
-    (0, common_1.Injectable)()
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], CategoriesService);
 //# sourceMappingURL=categories.service.js.map

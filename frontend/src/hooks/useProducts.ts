@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { productsService } from '../services/products.service';
+import { Product } from '../types/product';
 
 export function useProducts() {
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchProducts = async () => {
@@ -18,7 +19,10 @@ export function useProducts() {
   };
 
   useEffect(() => {
-    fetchProducts();
+    const timer = window.setTimeout(() => {
+      void fetchProducts();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   return { products, loading, refetch: fetchProducts };

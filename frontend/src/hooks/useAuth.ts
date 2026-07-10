@@ -1,19 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { authService } from '../services/auth.service';
+import { User } from '../types/user';
+
+type Credentials = {
+  email: string;
+  password: string;
+};
 
 export function useAuth() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window === 'undefined') {
+      return null;
     }
-    setLoading(false);
-  }, []);
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) {
+      return null;
+    }
+    try {
+      return JSON.parse(storedUser) as User;
+    } catch {
+      localStorage.removeItem('user');
+      return null;
+    }
+  });
+  const [loading] = useState(false);
 
-  const login = async (credentials: any) => {
+  const login = async (credentials: Credentials) => {
     const data = await authService.login(credentials);
     localStorage.setItem('token', data.accessToken);
     localStorage.setItem('user', JSON.stringify(data.user));
