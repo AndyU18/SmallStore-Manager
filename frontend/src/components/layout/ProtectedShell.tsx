@@ -3,15 +3,17 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { LogOut, Package, Tags, ShoppingCart, Boxes } from 'lucide-react';
+import { BarChart3, FileText, LogOut, Package, Tags, ShoppingCart, Boxes } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 const navItems = [
+  { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
   { href: '/products', label: 'Productos', icon: Package },
   { href: '/categories', label: 'Categorias', icon: Tags },
   { href: '/sales', label: 'Ventas', icon: ShoppingCart },
   { href: '/stock', label: 'Stock', icon: Boxes },
+  { href: '/reports', label: 'Reportes', icon: FileText },
 ];
 
 export function ProtectedShell({ children }: { children: React.ReactNode }) {
