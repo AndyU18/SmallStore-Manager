@@ -37,8 +37,8 @@ let ProductsController = class ProductsController {
     async create(dto, user) {
         return this.productsService.create(dto, user.id);
     }
-    async update(id, dto) {
-        return this.productsService.update(id, dto);
+    async update(id, dto, user) {
+        return this.productsService.update(id, dto, user.id);
     }
     async deactivate(id) {
         return this.productsService.deactivate(id);
@@ -68,8 +68,9 @@ __decorate([
     (0, common_1.Put)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_product_dto_1.UpdateProductDto]),
+    __metadata("design:paramtypes", [String, update_product_dto_1.UpdateProductDto, Object]),
     __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "update", null);
 __decorate([

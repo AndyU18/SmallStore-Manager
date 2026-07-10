@@ -8,12 +8,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
-  { href: '/products', label: 'Productos', icon: Package },
-  { href: '/categories', label: 'Categorias', icon: Tags },
-  { href: '/sales', label: 'Ventas', icon: ShoppingCart },
-  { href: '/stock', label: 'Stock', icon: Boxes },
-  { href: '/reports', label: 'Reportes', icon: FileText },
+  { href: '/dashboard', label: 'Dashboard', icon: BarChart3, roles: ['ADMIN', 'SELLER'] },
+  { href: '/products', label: 'Productos', icon: Package, roles: ['ADMIN', 'SELLER'] },
+  { href: '/categories', label: 'Categorias', icon: Tags, roles: ['ADMIN'] },
+  { href: '/sales', label: 'Ventas', icon: ShoppingCart, roles: ['ADMIN', 'SELLER'] },
+  { href: '/stock', label: 'Stock', icon: Boxes, roles: ['ADMIN'] },
+  { href: '/reports', label: 'Reportes', icon: FileText, roles: ['ADMIN'] },
 ];
 
 export function ProtectedShell({ children }: { children: React.ReactNode }) {
@@ -22,15 +22,22 @@ export function ProtectedShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.replace('/login');
+    if (!loading) {
+      if (!user) {
+        router.replace('/login');
+      } else {
+        const currentRoute = navItems.find((item) => item.href === pathname);
+        if (currentRoute && !currentRoute.roles.includes(user.role)) {
+          router.replace('/products');
+        }
+      }
     }
-  }, [loading, router, user]);
+  }, [loading, router, user, pathname]);
 
   if (loading || !user) {
     return (
       <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-        <div className="text-sm text-slate-300">Validando sesion...</div>
+        <div className="text-sm text-slate-300 animate-pulse">Validando sesion...</div>
       </div>
     );
   }
@@ -40,6 +47,8 @@ export function ProtectedShell({ children }: { children: React.ReactNode }) {
     router.replace('/login');
   };
 
+  const visibleItems = navItems.filter((item) => item.roles.includes(user.role));
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-white/10 bg-slate-900/95 p-5 md:flex md:flex-col">
@@ -48,7 +57,7 @@ export function ProtectedShell({ children }: { children: React.ReactNode }) {
         </Link>
         <p className="mt-1 text-xs text-slate-400">{user.name} · {user.role}</p>
         <nav className="mt-8 space-y-2">
-          {navItems.map((item) => {
+          {visibleItems.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href;
             return (
@@ -80,7 +89,7 @@ export function ProtectedShell({ children }: { children: React.ReactNode }) {
           <button onClick={handleLogout} className="text-sm text-slate-300">Salir</button>
         </div>
         <nav className="mt-3 flex gap-2 overflow-x-auto">
-          {navItems.map((item) => (
+          {visibleItems.map((item) => (
             <Link key={item.href} href={item.href} className="rounded-md bg-white/10 px-3 py-1 text-xs">
               {item.label}
             </Link>

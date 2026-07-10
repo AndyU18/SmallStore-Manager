@@ -34,8 +34,12 @@ export class ProductsController {
 
   @Roles(Role.ADMIN)
   @Put(':id')
-  async update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
-    return this.productsService.update(id, dto);
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateProductDto,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.productsService.update(id, dto, user.id);
   }
 
   @Roles(Role.ADMIN)

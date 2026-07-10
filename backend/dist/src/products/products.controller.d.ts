@@ -50,7 +50,9 @@ export declare class ProductsController {
         status: boolean;
         categoryId: string;
     }>;
-    update(id: string, dto: UpdateProductDto): Promise<{
+    update(id: string, dto: UpdateProductDto, user: {
+        id: string;
+    }): Promise<{
         category: {
             id: string;
             name: string;

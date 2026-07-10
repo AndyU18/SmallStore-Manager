@@ -52,7 +52,7 @@ export declare class ProductsService {
         status: boolean;
         categoryId: string;
     }>;
-    update(id: string, dto: UpdateProductDto): Promise<{
+    update(id: string, dto: UpdateProductDto, userId?: string): Promise<{
         category: {
             id: string;
             name: string;

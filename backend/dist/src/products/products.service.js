@@ -72,19 +72,36 @@ let ProductsService = class ProductsService {
             this.handleKnownError(error);
         }
     }
-    async update(id, dto) {
+    async update(id, dto, userId) {
         const current = await this.ensureProduct(id);
         if (dto.categoryId) {
             await this.ensureCategory(dto.categoryId);
         }
         try {
-            return await this.prisma.product.update({
-                where: { id },
-                data: {
-                    ...dto,
-                    stock: dto.stock ?? current.stock,
-                },
-                include: { category: true },
+            return await this.prisma.$transaction(async (tx) => {
+                const updated = await tx.product.update({
+                    where: { id },
+                    data: {
+                        ...dto,
+                        stock: dto.stock ?? current.stock,
+                    },
+                    include: { category: true },
+                });
+                if (dto.stock !== undefined && dto.stock !== current.stock) {
+                    const diff = dto.stock - current.stock;
+                    await tx.stockMovement.create({
+                        data: {
+                            productId: id,
+                            type: diff > 0 ? client_1.MovementType.IN : client_1.MovementType.OUT,
+                            quantity: Math.abs(diff),
+                            previousStock: current.stock,
+                            newStock: dto.stock,
+                            reason: 'Ajuste automatico por edicion de producto',
+                            userId: userId || 'system',
+                        },
+                    });
+                }
+                return updated;
             });
         }
         catch (error) {
